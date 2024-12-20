@@ -281,6 +281,14 @@ pam_listfile(pam_handle_t *pamh, int argc, const char **argv)
 	return onerr;
     }
 
+    if (fileinfo.st_uid != geteuid()) {
+	pam_syslog(pamh,LOG_ERR,
+		 "%s is not owned by application using PAM",
+		 ifname);
+        close(fd);
+	return PAM_AUTH_ERR;
+    }
+
     if((fileinfo.st_mode & S_IWOTH)
        || !S_ISREG(fileinfo.st_mode)) {
 	/* If the file is world writable or is not a
